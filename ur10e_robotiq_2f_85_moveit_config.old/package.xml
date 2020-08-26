@@ -3,7 +3,7 @@
   <name>ur10e_robotiq_2f_85_moveit_config</name>
   <version>0.3.0</version>
   <description>
-     An automatically generated package with all the configuration and launch files for using the ur10e_robotiq_2f_85_robot with the MoveIt! Motion Planning Framework
+     An automatically generated package with all the configuration and launch files for using the ur10e_robotiq_2f_85_robot with the MoveIt Motion Planning Framework
   </description>
   <author email="carlos.faria@dtx-colab.pt">Carlos Faria</author>
   <maintainer email="carlos.faria@dtx-colab.pt">Carlos Faria</maintainer>

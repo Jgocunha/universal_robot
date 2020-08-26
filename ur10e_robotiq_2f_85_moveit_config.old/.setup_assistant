@@ -8,4 +8,5 @@ moveit_setup_assistant_config:
   CONFIG:
     author_name: Carlos Faria
     author_email: carlos.faria@dtx-colab.pt
-    generated_timestamp: 1598441785
+    generated_timestamp: 1598353795
+    
