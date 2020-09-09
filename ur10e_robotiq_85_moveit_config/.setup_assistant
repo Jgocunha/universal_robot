@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: ur_e_description
+    relative_path: urdf/ur10e_robotiq_85_robot.urdf.xacro
+    xacro_args: ""
+  SRDF:
+    relative_path: config/ur10e_robotiq_85_robot.srdf
+  CONFIG:
+    author_name: Carlos Faria
+    author_email: carlos.faria@dtx-colab.pt
+    generated_timestamp: 1599504211

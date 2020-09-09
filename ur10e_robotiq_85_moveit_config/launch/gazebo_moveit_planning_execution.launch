@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<launch>
+ 
+  <!-- specify the planning pipeline -->
+  <arg name="pipeline" default="ompl" />
+
+  <!-- By default, we do not start a database (it can be large) -->
+  <arg name="db" default="false" />
+  <!-- Allow user to specify database location -->
+  <arg name="db_path" default="$(find ur10e_robotiq_85_moveit_config)/default_warehouse_mongo_db" />
+  <!-- By default, we are not in debug mode -->
+  <arg name="debug" default="false" />
+
+  <!--
+  By default, hide joint_state_publisher's GUI
+
+  MoveIt's "demo" mode replaces the real robot driver with the joint_state_publisher.
+  The latter one maintains and publishes the current joint configuration of the simulated robot.
+  It also provides a GUI to move the simulated robot around "manually".
+  This corresponds to moving around the real robot without the use of MoveIt.
+  -->
+  <arg name="sim" default="false" />
+  <arg name="use_gui" default="false" />
+  <arg name="use_rviz" default="true" />
+
+  <arg name="limited" default="false"  doc="If true, limits joint range [-PI, PI] on all joints." />
+  <arg name="paused" default="false" doc="Starts gazebo in paused mode" />
+  <arg name="gui" default="true" doc="Starts gazebo gui" />
+
+  <!-- Robot pose defined in ur10e_gluing_tool_description/setup/ur10e_joint_limited_robot_glue_ee.urdf.xacro -->
+
+  <!-- create a world reference rosrun tf static_transform_publisher 0 0 0 0 0 0 1 map my_frame 10-->
+  <!-- <node pkg="tf" type="static_transform_publisher" name="fixed_frame_world" args="0 0 0 0 0 0 1 map /world 10" /> -->
+
+  <!-- 
+    #############################################################################################
+    ########################################  GAZEBO  ########################################## 
+    #############################################################################################
+    -->
+
+  <!-- startup simulated world -->
+  <include file="$(find pick_place_scenarios)/launch/pick_place_world.launch">
+    <arg name="world_name" value="$(find pick_place_scenarios)/worlds/base_perception_with_objects.world"/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="gui" value="$(arg gui)"/>
+  </include>
+ 
+  <!-- THE GAZEBO SCENARIO AUTOMATICALLY LAUNCHES THE ROBOT -->
+  <!-- FOR WORLDS WITH NO ROBOT UNCOMMENT THE FOLLOWING BLOCKS -->
+  <!-- launch robot description  -->
+  <arg name="urdf_path" default="$(find ur_e_description)/urdf/ur10e_robotiq_85_robot.urdf.xacro"/>
+  <param name="robot_description" textfile="$(arg urdf_path)" />
+
+  <!-- push robot_description to factory and spawn robot in gazebo -->
+  <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model" 
+    args="-urdf -param robot_description -model ur10e_robotiq_85_robot -x 0.0 -y 0.0 -z 0.0 -R 0.0 -P 0.0 -Y 0.0" respawn="false" output="screen" />
+
+  <!-- Camera frame transform -->
+  <node pkg="tf" type="static_transform_publisher" name="fixed_camera_world" args="-1 -0.25 2.5 -0.853552 0.353553 -0.146448 0.353557 map camera_link 50" />
+  <!-- Remap /camera/depth/points to /camera/depth_registered/points, the expected point cloud to build an octomap 
+  <remap from="/camera/depth/points" to="/camera/depth_registered/points"/>-->
+
+  <!-- 
+  #############################################################################################
+  ######################################  CONTROLLER  ######################################### 
+  #############################################################################################
+  -->
+  
+  <!-- start this controller -->
+  <rosparam file="$(find ur10e_robotiq_85_moveit_config)/config/gazebo_controllers.yaml" command="load"/>
+  <node name="arm_controller_spawner" pkg="controller_manager" type="controller_manager" respawn="false" output="screen"
+    args="spawn manipulator_controller endeffector_controller joint_state_controller" />
+
+  <!-- We do not have a robot connected, so publish fake joint states -->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <param name="use_gui" value="$(arg use_gui)"/>
+    <rosparam param="source_list">["/joint_states"]</rosparam>
+  </node>
+
+  <!-- convert joint states to TF transforms for rviz, etc -->
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" respawn="false" output="screen">
+    <param name="publish_frequency" type="double" value="50.0" />
+    <param name="tf_prefix" type="string" value=""/>
+  </node>
+
+  <!-- 
+    #############################################################################################
+    ########################################  MOVEIT  ########################################### 
+    #############################################################################################
+    -->
+  <!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
+  <include file="$(find ur10e_robotiq_85_moveit_config)/launch/planning_context.launch">
+    <arg name="load_robot_description" value="true"/>
+  </include>
+ 
+  <!-- Run the main MoveIt executable without trajectory execution (we do not have controllers configured by default) -->
+  <include file="$(find ur10e_robotiq_85_moveit_config)/launch/move_group.launch">
+    <arg name="allow_trajectory_execution" value="true"/>
+    <arg name="fake_execution" value="true"/>
+    <arg name="info" value="true"/>
+    <arg name="debug" value="$(arg debug)"/>
+    <arg name="pipeline" value="$(arg pipeline)"/>
+  </include>  
+ 
+  <!-- Run Rviz and load the default config to see the state of the move_group node -->
+  <include file="$(find ur10e_robotiq_85_moveit_config)/launch/moveit_rviz.launch" if="$(arg use_rviz)">
+    <arg name="rviz_config" value="$(find ur10e_robotiq_85_moveit_config)/launch/moveit.rviz"/>
+    <arg name="debug" value="$(arg debug)"/>
+  </include>
+  
+  <!-- If database loading was enabled, start mongodb as well -->
+  <include file="$(find ur10e_robotiq_85_moveit_config)/launch/default_warehouse_db.launch" if="$(arg db)">
+    <arg name="moveit_warehouse_database_path" value="$(arg db_path)"/>
+  </include>
+ 
+</launch>

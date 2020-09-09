@@ -1,31 +1,29 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro"
-       name="ur10e_robotiq_2f_85_robot" >
+       name="ur10e_robotiq_85_robot" >
 
   <!-- common stuff -->
   <xacro:include filename="$(find ur_e_description)/urdf/common.gazebo.xacro" />
-
   <!-- ur10e -->
   <xacro:include filename="$(find ur_e_description)/urdf/ur10e.urdf.xacro" />
-  <!--robotiq 2f85-->
-  <xacro:include filename="$(find robotiq_2f_85_gripper_visualization)/urdf/robotiq_arg2f_85_model.xacro" />
-  
+  <!-- robotiq 2f85 -->
+  <xacro:include filename="$(find robotiq_85_description)/urdf/robotiq_85_gripper.urdf.xacro" />
+
   <!-- arm -->
   <xacro:arg name="kinematics_config" default="$(find ur_e_description)/config/ur10e_default.yaml"/>
   <xacro:ur10e_robot prefix="" joint_limited="false" kinematics_file="${load_yaml('$(arg kinematics_config)')}" />
+  
+  <!-- hand -->
+  <xacro:robotiq_85_gripper prefix="" parent="tool0" >
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 -1.57079632679 0.0" />
+  </xacro:robotiq_85_gripper>
 
   <link name="world" />
 
   <joint name="world_joint" type="fixed">
     <parent link="world" />
     <child link = "base_link" />
-    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-  </joint>
-
-  <joint name="arm_gripper_joint" type="fixed">
-    <parent link="tool0" />
-    <child link = "robotiq_arg2f_base_link" />
-    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <origin xyz="0.0 0.0 0.7" rpy="0.0 0.0 0.0" />
   </joint>
 
   <link name="virtual_ee_link" />

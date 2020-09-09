@@ -9,10 +9,9 @@ controller_list:
       - wrist_3_joint
   - name: fake_endeffector_controller
     joints:
-      - finger_joint
+      - gripper_finger1_joint
 initial:  # Define initial robot poses.
   - group: manipulator
     pose: home
   - group: endeffector
     pose: open
-
