@@ -27,11 +27,6 @@
   <arg name="paused" default="false" doc="Starts gazebo in paused mode" />
   <arg name="gui" default="true" doc="Starts gazebo gui" />
 
-  <!-- Robot pose defined in ur10e_gluing_tool_description/setup/ur10e_joint_limited_robot_glue_ee.urdf.xacro -->
-
-  <!-- create a world reference rosrun tf static_transform_publisher 0 0 0 0 0 0 1 map my_frame 10-->
-  <!-- <node pkg="tf" type="static_transform_publisher" name="fixed_frame_world" args="0 0 0 0 0 0 1 map /world 10" /> -->
-
   <!-- 
     #############################################################################################
     ########################################  GAZEBO  ########################################## 
@@ -40,7 +35,7 @@
 
   <!-- startup simulated world -->
   <include file="$(find pick_place_scenarios)/launch/pick_place_world.launch">
-    <arg name="world_name" value="$(find pick_place_scenarios)/worlds/base_perception_with_objects.world"/>
+    <arg name="world_name" value="$(find pick_place_scenarios)/worlds/base_perception_recognition.world"/>
     <arg name="paused" value="$(arg paused)"/>
     <arg name="gui" value="$(arg gui)"/>
   </include>
@@ -56,9 +51,7 @@
     args="-urdf -param robot_description -model ur10e_robotiq_85_robot -x 0.0 -y 0.0 -z 0.0 -R 0.0 -P 0.0 -Y 0.0" respawn="false" output="screen" />
 
   <!-- Camera frame transform -->
-  <node pkg="tf" type="static_transform_publisher" name="fixed_camera_world" args="-1 -0.25 2.5 -0.853552 0.353553 -0.146448 0.353557 map camera_link 50" />
-  <!-- Remap /camera/depth/points to /camera/depth_registered/points, the expected point cloud to build an octomap 
-  <remap from="/camera/depth/points" to="/camera/depth_registered/points"/>-->
+  <node pkg="tf" type="static_transform_publisher" name="fixed_camera_world" args="-1.1 1 1.7 -0.472761 0.796979 -0.323323 0.191792 map camera_link 10" />
 
   <!-- 
   #############################################################################################
